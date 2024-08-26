@@ -1,0 +1,97 @@
+.chat-interface {
+ 
+  background-color: #f8f9fa;
+  padding: 20px;
+  color: black;
+}
+
+.sidebar {
+  background-color: #343a40;
+  padding: 20px;
+  color: white;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.new-chat-btn {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.chat-list {
+  height: 80vh;
+  overflow-y: auto;
+  color: black;
+}
+
+.chat-item {
+  cursor: pointer;
+}
+
+.chat-display {
+  padding: 20px;
+  height: 87vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-window {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 60px; /* To accommodate the chat input height */
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  
+}
+
+.chat-input {
+  display: flex;
+  background: #333;
+  border-radius: 5px;
+  padding: 10px;
+  position: fixed;
+  bottom: 20px;
+  width: calc(100% - 60px); /* Adjusting for the container padding */
+}
+
+.message-input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.user-message {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  max-width: 75%;
+  align-self: flex-end;
+}
+
+.model-message {
+  background-color: #e9ecef;
+  color: black;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  max-width: 75%;
+  align-self: flex-start;
+}
+
+.cite-sources-btn {
+  margin-left: 10px;
+  font-size: 0.9em;
+}
+
+.country-dropdown {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+}
