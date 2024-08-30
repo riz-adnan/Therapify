@@ -1,70 +1,79 @@
-# Getting Started with Create React App
+# Therapify
+## Dynamic 3D Therapy with Fine-Tuned LLM
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
 
-In the project directory, you can run:
+A cutting-edge therapeutic experience combining the power of a fine-tuned LLM (Language Learning Model) with immersive 3D interaction. Users can engage in meaningful conversations with an AI therapist through text or enjoy an interactive experience with a 3D therapist model.
 
-### `npm start`
+## 🚀 Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Fine-Tuned LLM:** Optimized for therapy conversations using LoRA, ensuring responsive and empathetic interactions.
+- **3D Therapist Model:** Offers an immersive, visual therapy session with a highly interactive 3D model.
+- **Dual Interaction Modes:** Choose between text-based conversation or a visual 3D therapy session.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🎯 Project Goals
 
-### `npm test`
+- Provide users with an engaging and supportive therapeutic environment.
+- Utilize advanced AI models to simulate real-time conversations with a therapist.
+- Integrate 3D modeling for a more immersive experience.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Setup
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Python 3.7+
+- Node
+- React
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Running Backend**
+**Install Dependencies**
+```bash
+pip install requirements.txt
+```
 
-### `npm run eject`
+**Starting Backend**
+```bash
+python app.py
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**Running Frontend**
+**Install Dependencies**
+```bash
+cd frontend
+npm i
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**Starting Frontend**
+```bash
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Demo
+Live link : https://illustrious-alpaca-2fad4b.netlify.app/
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📦 Usage
 
-## Learn More
+- **Text Conversation:** Initiate a conversation with the AI therapist via text. The model is fine-tuned to understand and respond empathetically to various therapeutic topics.
+  
+- **3D Interaction:** Experience therapy sessions with a 3D therapist model. The model reacts to your text inputs and provides visual responses.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🎨 Customization
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Fine-Tuning the LLM:** Modify the LLM to suit specific therapy needs using the LoRA framework.
+  
+- **3D Model Adjustments:** Use Blender to customize the 3D therapist model's appearance and animations.
 
-### Code Splitting
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+We welcome contributions to enhance the features and usability of this project. Please submit a pull request or open an issue to get started.
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+## 🌐 Connect with Me
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- [LinkedIn](https://www.linkedin.com/in/adnan-rizvi-271165227)
+- [Email](mailto:rizviadnan79@gmail.com)
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
