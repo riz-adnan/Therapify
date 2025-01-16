@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { FaFileContract, FaRobot } from 'react-icons/fa';
+import { FaFileContract, FaRobot, FaVideo } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Particles from 'react-particles';
 import {Tilt} from 'react-tilt';
@@ -25,7 +25,7 @@ const LandingPage = () => {
           },
         }}
       />
-      <Container fluid className="text-center d-flex flex-column justify-content-center">
+      <Container fluid className="text-center d-flex flex-column justify-content-center ">
         <motion.h1 
           className="mb-4"
           initial={{ opacity: 0, y: -50 }}
@@ -53,8 +53,10 @@ const LandingPage = () => {
             >
               <Tilt className="Tilt" options={{ max: 25 }}>
                 <Link to="/videochat" smooth={true} duration={1000}>
-                  <Button variant="primary" size="lg" className="w-100 custom-button" style={{ fontSize: '1.5rem' }}>
-                    <FaFileContract className="me-2" /> Go to Session with your Therapist.
+                  <Button variant="primary" size="lg" className="w-100 text-white bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" style={{ fontSize: '1.5rem' }}>
+                    <div className="flex items-center justify-center pb-3 pt-3">
+                    <FaVideo className="mr-5" /> Session with Therapist.
+                    </div>
                   </Button>
                 </Link>
               </Tilt>
@@ -68,8 +70,11 @@ const LandingPage = () => {
             >
               <Tilt className="Tilt" options={{ max: 25 }}>
                 <Link to="/chat" smooth={true} duration={1000}>
-                  <Button variant="secondary" size="lg" className="w-100 custom-button" style={{ fontSize: '1.5rem' }}>
-                    <FaRobot className="me-2" /> Chat with your Therpaist.
+                  <Button variant="secondary" size="lg" className=" w-100 text-white bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" style={{ fontSize: '1.5rem' }}>
+                   <div className="flex items-center justify-center pb-3 pt-3">
+                      
+                    <FaRobot className="mr-5 " /> Chat with your Therpaist.
+                    </div>
                   </Button>
                 </Link>
               </Tilt>

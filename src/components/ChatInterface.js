@@ -1,27 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, ListGroup, Form, Button, Dropdown, Modal, Spinner } from 'react-bootstrap';
-import { FaPlus, FaTrash, FaGlobe } from 'react-icons/fa';
-import Flag from 'react-world-flags';
+import { Container, Row, Col, ListGroup, Form, Button, Spinner, Modal } from 'react-bootstrap';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import './ChatInterface.css';
 
 const ChatInterface = () => {
   const [chats, setChats] = useState([]);
   const [currentChatIndex, setCurrentChatIndex] = useState(null);
   const [message, setMessage] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('India');
   const [isLoading, setIsLoading] = useState(false);
-  const [showCiteSources, setShowCiteSources] = useState(false);
-  const [currentCiteSources, setCurrentCiteSources] = useState([]);
-  const [showPopup, setShowPopup] = useState(false);
-  const popupTimer = useRef(null);
+  const loadingTimeout = useRef(null);
 
   useEffect(() => {
     const storedChats = JSON.parse(localStorage.getItem('chats')) || [];
     setChats(storedChats);
-  }, [showPopup]);
+  }, []);
 
   const handleNewChat = () => {
-    const newChat = { name: 'New Chat', messages: [] };
+    const newChat = { name: 'New Chat', messages: [{ user: 'Therapist', text: 'Hi, I am your therapist. How can I help you?' }] };
     const updatedChats = [...chats, newChat];
     setChats(updatedChats);
     setCurrentChatIndex(updatedChats.length - 1);
@@ -29,47 +24,39 @@ const ChatInterface = () => {
   };
 
   const handleChatClick = (index) => {
-    console.log(index);
     setCurrentChatIndex(index);
   };
 
   const handleSendMessage = async () => {
     if (message.trim() && currentChatIndex !== null) {
       setIsLoading(true);
-      setShowPopup(false);
-      clearTimeout(popupTimer.current);
-
+      loadingTimeout.current = setTimeout(() => {
+        alert(
+          "Since we are using the free server it might take some time if you are using for the first time or after some time of inactivity.After some responses, Later responses will be fast."
+        );
+      }, 10000);
       try {
-        setShowPopup(true);
         const response = await fetch('https://backends-nkql.onrender.com/chat', {
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
           body: JSON.stringify({
-            message: message,
-            previous: chats[currentChatIndex]?.messages || [],
+            message,
+            previous: chats[currentChatIndex]?.messages || [{ user: 'Therapist', text: 'Hi, I am your therapist. How can I help you?' }],
           }),
         });
-
-        setShowPopup(false);
-
+        clearTimeout(loadingTimeout.current);
         const data = await response.json();
-        clearTimeout(popupTimer.current);
         const aimessage = data.response;
-        const citesources = data.top_5_results;
-
+        
         const updatedChats = chats.map((chat, index) => {
           if (index === currentChatIndex) {
-            const newChat = {
+            const newMessages = [...chat.messages, { user: 'User', text: message }, { user: 'Therapist', text: aimessage }];
+            const newName = newMessages[0].text.substring(0, 20);
+            return {
               ...chat,
-              name: chat.name === 'New Chat' ? message.substring(0, 20) : chat.name,
-              messages: [
-                ...chat.messages,
-                { user: 'User', text: message },
-                { user: 'Therapist', text: aimessage, citesources: citesources },
-              ],
+              name: newName,
+              messages: newMessages,
             };
-
-            return newChat;
           }
           return chat;
         });
@@ -78,31 +65,13 @@ const ChatInterface = () => {
         localStorage.setItem('chats', JSON.stringify(updatedChats));
         setMessage('');
       } catch (error) {
+        clearTimeout(loadingTimeout.current);
         console.error('Error sending message:', error);
       } finally {
         setIsLoading(false);
       }
     }
   };
-
-  useEffect(() => {
-    if (
-      currentChatIndex !== null &&
-      chats[currentChatIndex]?.name === 'New Chat' &&
-      chats[currentChatIndex]?.messages?.length === 1
-    ) {
-      const newName = chats[currentChatIndex].messages[0].text.substring(0, 20);
-      const updatedChats = chats.map((chat, index) => {
-        if (index === currentChatIndex) {
-          const newChat = { ...chat, name: newName };
-          return newChat;
-        }
-        return chat;
-      });
-      setChats(updatedChats);
-      localStorage.setItem('chats', JSON.stringify(updatedChats));
-    }
-  }, [currentChatIndex, chats]);
 
   const handleDeleteChat = (index) => {
     const updatedChats = chats.filter((_, i) => i !== index);
@@ -111,85 +80,70 @@ const ChatInterface = () => {
     localStorage.setItem('chats', JSON.stringify(updatedChats));
   };
 
-  const handleCountrySelect = (country) => {
-    setSelectedCountry(country);
-    if (country !== 'India') {
-      alert('We are constructing it');
-    }
-  };
-
-  const handleShowCiteSources = (citesources) => {
-    setCurrentCiteSources(citesources);
-    setShowCiteSources(true);
-  };
-
   return (
-    <Container fluid className="chat-interface h-100">
-      <Row className="h-100">
-        <Col md={3} className="sidebar h-100">
-          
-          <Button variant="primary" className="new-chat-btn" onClick={handleNewChat}>
+    <Container fluid className="chat-interface" style={{ height: '100vh', backgroundColor: '#1e1e2e', color: '#fff' }}>
+      <Row style={{ height: '100%' }}>
+        <Col md={3} className="sidebar p-3" style={{ backgroundColor: '#27293d', borderRight: '1px solid #444' }}>
+          <Button variant="success" className="w-100 mb-3" onClick={handleNewChat}>
             <FaPlus className="me-2" /> New Chat
           </Button>
-          <ListGroup className="chat-list">
+          <ListGroup variant="flush">
             {chats.map((chat, index) => (
               <ListGroup.Item
                 key={index}
-                className="d-flex justify-content-between align-items-center chat-item"
+                className={`d-flex justify-content-between align-items-center chat-item ${currentChatIndex === index ? 'active' : ''}`}
                 onClick={() => handleChatClick(index)}
+                style={{ cursor: 'pointer', backgroundColor: currentChatIndex === index ? '#444' : '#27293d', color: '#fff' }}
               >
-                <span>{chat.name}</span>
+                {chat.name}
                 <FaTrash
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteChat(index);
                   }}
+                  style={{ cursor: 'pointer', color: '#ff5c5c' }}
                 />
               </ListGroup.Item>
             ))}
           </ListGroup>
         </Col>
-        <Col  className="chat-display h-100">
+
+        <Col md={9} className="chat-display d-flex flex-column" style={{ height: '100%' }}>
           {currentChatIndex !== null && chats[currentChatIndex]?.messages ? (
-            <div className="chat-window">
-              <div className="chat-messages">
-                {chats[currentChatIndex].messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`message ${msg.user === 'User' ? 'user-message' : 'model-message'}`}
-                  >
+            <div className="chat-window flex-grow-1 overflow-auto p-3" style={{ backgroundColor: '#2e2f3e', borderRadius: '5px' }}>
+              {chats[currentChatIndex].messages.map((msg, index) => (
+                <div key={index} className={`message ${msg.user === 'User' ? 'user-message' : 'therapist-message'} mb-3`}>
+                  <div style={{ backgroundColor: msg.user === 'User' ? '#3d85c6' : '#6aa84f', padding: '10px', borderRadius: '10px', color: '#fff' }}>
                     <strong>{msg.user}:</strong> {msg.text}
-                    
                   </div>
-                ))}
-              </div>
-              <Form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="chat-input">
-                <Form.Control
-                  type="text"
-                  placeholder="Type your message..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="message-input"
-                  disabled={isLoading}
-                />
-                <Button variant="primary" type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                  ) : (
-                    'Send'
-                  )}
-                </Button>
-              </Form>
+                </div>
+              ))}
             </div>
           ) : (
-            <h3>Select a chat to start messaging</h3>
+            <div className="d-flex justify-content-center align-items-center flex-grow-1">
+              <h4 style={{ color: '#888' }}>Select a chat or start a new conversation.</h4>
+            </div>
           )}
+
+          <Form className="d-flex mt-3" onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
+            <Form.Control
+              type="text"
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              style={{ flex: 1, marginRight: '10px', backgroundColor: '#444', color: '#fff', border: 'none', borderRadius: '5px' }}
+              disabled={isLoading}
+            />
+            <Button variant="primary" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+              ) : (
+                'Send'
+              )}
+            </Button>
+          </Form>
         </Col>
       </Row>
-
-      
-
-     
     </Container>
   );
 };

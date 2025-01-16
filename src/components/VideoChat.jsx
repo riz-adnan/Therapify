@@ -1,20 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Environment, useTexture } from "@react-three/drei";
-import { Avatar } from "./Avatar";
-import { Canvas, useThree } from "@react-three/fiber";
+import React, { useEffect, useState, useRef } from "react";
+import { Environment } from "@react-three/drei";
+import { Model as Avatar } from "./Avatar";
+import { Canvas } from "@react-three/fiber";
 import './verse.css';
-
-const Background = () => {
-  const texture = useTexture('back.jpg');
-  const { viewport } = useThree();
-
-  return (
-    <mesh position={[0, 0, -10]} renderOrder={-1} scale={3}>
-      <planeGeometry args={[viewport.width, viewport.height]} />
-      <meshBasicMaterial map={texture} />
-    </mesh>
-  );
-};
 
 export const VideoChat = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -22,125 +10,145 @@ export const VideoChat = () => {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
   const [talking, setTalking] = useState(false);
+  const [loading, setLoading] = useState(false); // State for loader visibility
+  const avatarRef = useRef();
 
-  function startRecording() {
+  // Start recording and process the speech
+  async function startRecording() {
     console.log('Recording started');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-          const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-          recognition.lang = 'en-US';
-          recognition.interimResults = false;
-          recognition.maxAlternatives = 1;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
-          let silenceTimer;
-          let isRecording = true;
+        let silenceTimer;
+        let isRecording = true;
+        console.log('Listening...');
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          console.log('Transcription:', transcript);
 
-          recognition.onresult = event => {
-            const transcript = event.results[0][0].transcript;
-            console.log('Transcription:', transcript);
+          let currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
+          currentChat.push({ user: 'User', text: transcript });
+          localStorage.setItem('therapy', JSON.stringify(currentChat));
+          localStorage.setItem('message', transcript);
 
-            let currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
-            currentChat.push({ user: 'User', text: transcript });
-            localStorage.setItem('therapy', JSON.stringify(currentChat));
-            localStorage.setItem('message', transcript);
-
-            handleSendMessage();  // Send the message immediately after getting the user's speech
-
-            // Reset the silence timer after each result
-            resetSilenceTimer();
-          };
-
-          recognition.onend = () => {
-            if (isRecording) {
-              console.log('Recognition ended');
-              setListening(false); // Stop listening after recognition ends
-            }
-          };
-
-          recognition.onerror = event => {
-            console.error('Recognition error:', event.error);
-            clearTimeout(silenceTimer);
-          };
-
-          function resetSilenceTimer() {
-            clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-              isRecording = false;
-              recognition.stop();
-            }, 10000); // Stop after 10 seconds of silence
-          }
-
-          recognition.start();
+          handleSendMessage(); // Send the message immediately after getting the user's speech
           resetSilenceTimer();
-        })
-        .catch(error => console.error('Error accessing microphone:', error));
+        };
+
+        recognition.onend = () => {
+          if (isRecording) {
+            console.log('Recognition ended');
+            setListening(false);
+            setTalking(true); // Stop listening after recognition ends
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Recognition error:', event.error);
+          clearTimeout(silenceTimer);
+        };
+
+        function resetSilenceTimer() {
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            isRecording = false;
+            recognition.stop();
+          }, 10000); // Stop after 10 seconds of silence
+        }
+
+        recognition.start();
+        resetSilenceTimer();
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+      }
     } else {
       console.error('getUserMedia not supported on your browser!');
     }
   }
 
+  // Send the user's message to the backend and process the response
   const handleSendMessage = async () => {
-    console.log("message: ", window.localStorage.getItem('message'));
+    setLoading(true); // Show loader
+    const userMessage = window.localStorage.getItem('message');
+    console.log("message: ", userMessage);
   
-    const response = await fetch('https://backends-nkql.onrender.com/chat', {
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-      body: JSON.stringify({
-        message: window.localStorage.getItem('message'),
-        previous: JSON.parse(window.localStorage.getItem('therapy')) || [],
-      }),
-    });
+    try {
+      const response = await fetch('https://backends-nkql.onrender.com/chat', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+          message: userMessage,
+          previous: JSON.parse(window.localStorage.getItem('therapy')) || [],
+        }),
+      });
   
-    let data = await response.json();
-    data = data.response;
-    console.log("data: ", data);
-    let currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
-    currentChat.push({ user: 'Therapist', text: data });
-    setChat(currentChat);
-    localStorage.setItem('therapy', JSON.stringify(currentChat));
+      const data = await response.json();
+      const reply = data.response;
+      console.log("data: ", reply);
   
-    if ('speechSynthesis' in window) {
-      const speech = new SpeechSynthesisUtterance(data);
-      speech.lang = 'en-US';
-      speech.volume = 1; 
-      speech.rate = 1;
-      speech.pitch = 1;
+      const currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
+      currentChat.push({ user: 'Therapist', text: reply });
+      setChat(currentChat);
+      localStorage.setItem('therapy', JSON.stringify(currentChat));
   
-      const voices = window.speechSynthesis.getVoices();
-      for (let i = 0; i < voices.length; i++) {
-        if(voices[i].name === 'Microsoft Zira - English (United States)')
-        {
-          speech.voice = voices[i];
-          break;
-        }
-        console.log(voices[i]);
-      }
-      const femaleVoice = voices.find(voice => voice.name.includes('Female') || voice.gender === 'female' || voice.name.includes('Samantha'));
-  
-      
-        speech.voice = femaleVoice;
-      
+      // Speak the response
+      console.log("start speaking...");
+      if ('speechSynthesis' in window) {
+        console.log('Speech synthesis supported');
+        
+        const speech = new SpeechSynthesisUtterance(reply);
+        speech.lang = 'en-US';
+        speech.volume = 1; // Maximum volume
+        speech.pitch=1;
+       
+        
 
-      speech.onend = () => {
-        console.log('Speech ended');
-        setListening(true); // Start listening after speech ends
-      };
   
-      window.speechSynthesis.speak(speech);
-      setTalking(true);
+        window.speechSynthesis.speak(speech);
+        
+          speech.onend = () => {
+        setTalking(false);
+        console.log('Speech ended');
+          setListening(true); 
+          startRecording();
+      }
+      } else {
+        alert('Your browser does not support text-to-speech.');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setLoading(false); // Hide loader
+    }
+  };
+  
+  function setVoice(speech, voices) {
+    const femaleVoice = voices.find((voice) =>
+      voice.name.includes('Female') || voice.gender === 'female' || voice.name.includes('Samantha')
+    );
+    if (femaleVoice) {
+      speech.voice = femaleVoice;
+      console.log("Using voice: ", femaleVoice.name);
     } else {
-      alert('Your browser does not support text-to-speech.');
+      console.log("No specific female voice found, using default.");
     }
   }
   
+
   useEffect(() => {
-    const storedChat = [];
-    storedChat.push({ user: 'Therapist', text: 'Hi, I am your therapist. Let us begin the session.' });
+    const storedChat = [
+      { user: 'Therapist', text: 'Hi, I am your therapist. Let us begin the session.' },
+    ];
     localStorage.setItem('therapy', JSON.stringify(storedChat));
   }, []);
 
   useEffect(() => {
+    
     if (listening) {
       startRecording();
     }
@@ -159,22 +167,34 @@ export const VideoChat = () => {
   };
 
   return (
-    <div className="container">
-      {!sessionStarted ? (
-        <button className="start-button" onClick={startSession}>
-          Start Session
-        </button>
-      ) : (
-        <button className="stop-button" onClick={stopSession}>
-          Stop Session
-        </button>
-      )}
+    <div
+      className="scroll-container bg-cover bg-center h-[100vh] overflow-y-hidden"
+      style={{
+        backgroundImage: "url('/therapyroom.webp')",
+      }}
+    >
       <div className={`canvas-wrapper ${sessionStarted ? "unblurred" : ""}`}>
-        <Canvas>
-          <Background />
-          <Avatar position={[-0.5, -6.5, -4]} scale={5} />
+        <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+          <Avatar ref={avatarRef} position={[2.5, -6, -4]} scale={5} />
           <Environment preset="sunset" />
+          {loading && (
+            <mesh position={[4, -6, -4]}>
+              <sphereGeometry args={[0.5, 32, 32]} />
+              <meshStandardMaterial color="orange" />
+            </mesh>
+          )}
         </Canvas>
+      </div>
+      <div className="ui-container">
+        {!sessionStarted ? (
+          <button className="start-button" onClick={startSession}>
+            Start Session
+          </button>
+        ) : (
+          <button className="stop-button" onClick={stopSession}>
+            Stop Session
+          </button>
+        )}
       </div>
     </div>
   );

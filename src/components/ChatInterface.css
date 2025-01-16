@@ -30,7 +30,7 @@
 
 .chat-display {
   padding: 20px;
-  height: 87vh;
+ 
   display: flex;
   flex-direction: column;
 }
@@ -57,7 +57,7 @@
   padding: 10px;
   position: fixed;
   bottom: 20px;
-  width: calc(100% - 60px); /* Adjusting for the container padding */
+
 }
 
 .message-input {
