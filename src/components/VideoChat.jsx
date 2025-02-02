@@ -8,8 +8,7 @@ import './verse.css';
 export const VideoChat = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [listening, setListening] = useState(false);
-  const [message, setMessage] = useState('');
-  const [chat, setChat] = useState([]);
+  
   const [talking, setTalking] = useState(false);
   const [loading, setLoading] = useState(false); // State for loader visibility
   const avatarRef = useRef();
@@ -20,7 +19,7 @@ export const VideoChat = () => {
     console.log('Recording started');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+       
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'en-US';
         recognition.interimResults = false;
@@ -95,7 +94,7 @@ export const VideoChat = () => {
   
       const currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
       currentChat.push({ user: 'Therapist', text: reply });
-      setChat(currentChat);
+     
       localStorage.setItem('therapy', JSON.stringify(currentChat));
   
       // Speak the response
@@ -129,17 +128,7 @@ export const VideoChat = () => {
     }
   };
   
-  function setVoice(speech, voices) {
-    const femaleVoice = voices.find((voice) =>
-      voice.name.includes('Female') || voice.gender === 'female' || voice.name.includes('Samantha')
-    );
-    if (femaleVoice) {
-      speech.voice = femaleVoice;
-      console.log("Using voice: ", femaleVoice.name);
-    } else {
-      console.log("No specific female voice found, using default.");
-    }
-  }
+  
   
 
   useEffect(() => {
@@ -159,7 +148,7 @@ export const VideoChat = () => {
     if (listening) {
       startRecording();
     }
-  }, [listening]);
+  }, [listening, startRecording]);
 
   const startSession = () => {
     setSessionStarted(true);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, ListGroup, Form, Button, Spinner, Modal } from 'react-bootstrap';
+import { Container, Row, Col, ListGroup, Form, Button, Spinner } from 'react-bootstrap';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import './ChatInterface.css';
 import { toast } from "react-toastify";

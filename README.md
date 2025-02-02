@@ -51,8 +51,7 @@ npm start
 ```
 
 ## Demo
-Live link : https://symphonious-brigadeiros-1e8f9a.netlify.app/
-
+Live link : https://jolly-travesseiro-77c3db.netlify.app/ . (Note: Free servers are being used. If you are using after a time of inactivity, please wait for the server to get started. Also if you reload , netlify might show a page of broken link, Please go back website will start working again.)
 ## 📦 Usage
 
 - **Text Conversation:** Initiate a conversation with the AI therapist via text. The model is fine-tuned to understand and respond empathetically to various therapeutic topics.

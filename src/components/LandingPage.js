@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { FaFileContract, FaRobot, FaVideo } from 'react-icons/fa';
+import {  FaRobot, FaVideo } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Particles from 'react-particles';
 import {Tilt} from 'react-tilt';
-import { Element } from 'react-scroll';
+
 import {Link} from 'react-router-dom'
 import './LandingPage.css';
 
