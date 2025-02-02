@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Environment } from "@react-three/drei";
 import { Model as Avatar } from "./Avatar";
 import { Canvas } from "@react-three/fiber";
@@ -8,18 +8,15 @@ import './verse.css';
 export const VideoChat = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [listening, setListening] = useState(false);
-  
   const [talking, setTalking] = useState(false);
   const [loading, setLoading] = useState(false); // State for loader visibility
   const avatarRef = useRef();
 
- 
-  // Start recording and process the speech
-  async function startRecording() {
+  // Memoized function using useCallback to prevent unnecessary re-renders
+  const startRecording = useCallback(async () => {
     console.log('Recording started');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-       
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'en-US';
         recognition.interimResults = false;
@@ -28,6 +25,7 @@ export const VideoChat = () => {
         let silenceTimer;
         let isRecording = true;
         console.log('Listening...');
+
         recognition.onresult = (event) => {
           const transcript = event.results[0][0].transcript;
           console.log('Transcription:', transcript);
@@ -45,7 +43,6 @@ export const VideoChat = () => {
           if (isRecording) {
             console.log('Recognition ended');
             setListening(false);
-             // Stop listening after recognition ends
           }
         };
 
@@ -59,7 +56,7 @@ export const VideoChat = () => {
           silenceTimer = setTimeout(() => {
             isRecording = false;
             recognition.stop();
-          }, 40000); // Stop after 10 seconds of silence
+          }, 40000); // Stop after 40 seconds of silence
         }
 
         recognition.start();
@@ -70,14 +67,14 @@ export const VideoChat = () => {
     } else {
       console.error('getUserMedia not supported on your browser!');
     }
-  }
+  }, []); // Empty dependency array ensures `startRecording` doesn't change on each render
 
   // Send the user's message to the backend and process the response
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     setLoading(true); // Show loader
     const userMessage = window.localStorage.getItem('message');
     console.log("message: ", userMessage);
-  
+
     try {
       const response = await fetch('https://backends-nkql.onrender.com/chat', {
         headers: { 'Content-Type': 'application/json' },
@@ -87,37 +84,35 @@ export const VideoChat = () => {
           previous: JSON.parse(window.localStorage.getItem('therapy')) || [],
         }),
       });
-  
+
       const data = await response.json();
       const reply = data.response;
       console.log("data: ", reply);
-  
+
       const currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
       currentChat.push({ user: 'Therapist', text: reply });
-     
+
       localStorage.setItem('therapy', JSON.stringify(currentChat));
-  
+
       // Speak the response
       console.log("start speaking...");
       if ('speechSynthesis' in window) {
         console.log('Speech synthesis supported');
-        
+
         const speech = new SpeechSynthesisUtterance(reply);
         speech.lang = 'en-US';
         speech.volume = 1; // Maximum volume
-        speech.pitch=1;
-       
-        
+        speech.pitch = 1;
 
         setTalking(true);
         window.speechSynthesis.speak(speech);
-        
-          speech.onend = () => {
-        setTalking(false);
-        console.log('Speech ended');
-          setListening(true); 
+
+        speech.onend = () => {
+          setTalking(false);
+          console.log('Speech ended');
+          setListening(true);
           startRecording();
-      }
+        };
       } else {
         alert('Your browser does not support text-to-speech.');
       }
@@ -126,25 +121,23 @@ export const VideoChat = () => {
     } finally {
       setLoading(false); // Hide loader
     }
-  };
-  
-  
-  
+  }, [startRecording]); // Depend on `startRecording` to ensure it's stable
 
+  // Effect to show a toast when the component mounts
   useEffect(() => {
-    toast.info('Since we are using a free server currently. Our Server might go to domant mode due to inactivity. If you are using this after a long time, please wait for a few seconds for the server to wake up.', {
+    toast.info('Since we are using a free server currently. Our Server might go to dormant mode due to inactivity. If you are using this after a long time, please wait for a few seconds for the server to wake up.', {
       position: 'top-center',
       autoClose: 10000,
     });
-    
+
     const storedChat = [
       { user: 'Therapist', text: 'Hi, I am your therapist. Let us begin the session.' },
     ];
     localStorage.setItem('therapy', JSON.stringify(storedChat));
   }, []);
 
+  // Effect to start recording when `listening` state changes
   useEffect(() => {
-    
     if (listening) {
       startRecording();
     }
@@ -171,8 +164,8 @@ export const VideoChat = () => {
     >
       <div className={`canvas-wrapper ${sessionStarted ? "unblurred" : "unblurred"}`}>
         <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-        <Avatar ref={avatarRef} position={[0, -6, -4]} scale={5} talking={talking} sessionStarted={sessionStarted} />
-        <Environment preset="sunset" />
+          <Avatar ref={avatarRef} position={[0, -6, -4]} scale={5} talking={talking} sessionStarted={sessionStarted} />
+          <Environment preset="sunset" />
           {loading && (
             <mesh position={[4, -6, -4]}>
               <sphereGeometry args={[0.5, 32, 32]} />
