@@ -51,7 +51,7 @@ npm start
 ```
 
 ## Demo
-Live link : https://illustrious-alpaca-2fad4b.netlify.app/
+Live link : https://symphonious-brigadeiros-1e8f9a.netlify.app/
 
 ## 📦 Usage
 
