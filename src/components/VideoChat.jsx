@@ -9,67 +9,10 @@ export const VideoChat = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [listening, setListening] = useState(false);
   const [talking, setTalking] = useState(false);
-  const [loading, setLoading] = useState(false); // State for loader visibility
+  const [loading, setLoading] = useState(false);
   const avatarRef = useRef();
 
-  // Memoized function using useCallback to prevent unnecessary re-renders
-  const startRecording = useCallback(async () => {
-    console.log('Recording started');
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        let silenceTimer;
-        let isRecording = true;
-        console.log('Listening...');
-
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          console.log('Transcription:', transcript);
-
-          let currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
-          currentChat.push({ user: 'User', text: transcript });
-          localStorage.setItem('therapy', JSON.stringify(currentChat));
-          localStorage.setItem('message', transcript);
-
-          handleSendMessage(); // Send the message immediately after getting the user's speech
-          resetSilenceTimer();
-        };
-
-        recognition.onend = () => {
-          if (isRecording) {
-            console.log('Recognition ended');
-            setListening(false);
-          }
-        };
-
-        recognition.onerror = (event) => {
-          console.error('Recognition error:', event.error);
-          clearTimeout(silenceTimer);
-        };
-
-        function resetSilenceTimer() {
-          clearTimeout(silenceTimer);
-          silenceTimer = setTimeout(() => {
-            isRecording = false;
-            recognition.stop();
-          }, 40000); // Stop after 40 seconds of silence
-        }
-
-        recognition.start();
-        resetSilenceTimer();
-      } catch (error) {
-        console.error('Error accessing microphone:', error);
-      }
-    } else {
-      console.error('getUserMedia not supported on your browser!');
-    }
-  }, []); // Empty dependency array ensures `startRecording` doesn't change on each render
-
-  // Send the user's message to the backend and process the response
+  // Memoized function to send messages to the backend
   const handleSendMessage = useCallback(async () => {
     setLoading(true); // Show loader
     const userMessage = window.localStorage.getItem('message');
@@ -111,7 +54,6 @@ export const VideoChat = () => {
           setTalking(false);
           console.log('Speech ended');
           setListening(true);
-          startRecording();
         };
       } else {
         alert('Your browser does not support text-to-speech.');
@@ -121,7 +63,64 @@ export const VideoChat = () => {
     } finally {
       setLoading(false); // Hide loader
     }
-  }, [startRecording]); // Depend on `startRecording` to ensure it's stable
+  }, []); // No dependencies, since it only works with localStorage and API calls
+
+  // Memoized function for starting recording
+  const startRecording = useCallback(async () => {
+    console.log('Recording started');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        let silenceTimer;
+        let isRecording = true;
+        console.log('Listening...');
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          console.log('Transcription:', transcript);
+
+          let currentChat = JSON.parse(localStorage.getItem('therapy')) || [];
+          currentChat.push({ user: 'User', text: transcript });
+          localStorage.setItem('therapy', JSON.stringify(currentChat));
+          localStorage.setItem('message', transcript);
+
+          handleSendMessage(); // Use the memoized function
+          resetSilenceTimer();
+        };
+
+        recognition.onend = () => {
+          if (isRecording) {
+            console.log('Recognition ended');
+            setListening(false);
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Recognition error:', event.error);
+          clearTimeout(silenceTimer);
+        };
+
+        function resetSilenceTimer() {
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            isRecording = false;
+            recognition.stop();
+          }, 40000);
+        }
+
+        recognition.start();
+        resetSilenceTimer();
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+      }
+    } else {
+      console.error('getUserMedia not supported on your browser!');
+    }
+  }, [handleSendMessage]); // Depend on the memoized handleSendMessage
 
   // Effect to show a toast when the component mounts
   useEffect(() => {
