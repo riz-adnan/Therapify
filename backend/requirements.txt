@@ -1,0 +1,11 @@
+bitsandbytes
+peft
+trl
+accelerate
+datasets
+transformers
+Flask
+Flask-Cors
+python-dotenv
+google-generativeai
+requests
