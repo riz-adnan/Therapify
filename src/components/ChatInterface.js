@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, ListGroup, Form, Button, Spinner, Modal } from 'react-bootstrap';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import './ChatInterface.css';
-
+import { toast } from "react-toastify";
 const ChatInterface = () => {
   const [chats, setChats] = useState([]);
   const [currentChatIndex, setCurrentChatIndex] = useState(null);
@@ -31,10 +31,11 @@ const ChatInterface = () => {
     if (message.trim() && currentChatIndex !== null) {
       setIsLoading(true);
       loadingTimeout.current = setTimeout(() => {
-        alert(
-          "Since we are using the free server it might take some time if you are using for the first time or after some time of inactivity.After some responses, Later responses will be fast."
-        );
-      }, 10000);
+         toast.info('Since we are using a free server currently. Our Server might go to domant mode due to inactivity. If you are using this after a long time, please wait for a few seconds for the server to wake up.', {
+              position: 'top-center',
+              autoClose: 10000,
+            });
+      }, 5000);
       try {
         const response = await fetch('https://backends-nkql.onrender.com/chat', {
           headers: { 'Content-Type': 'application/json' },

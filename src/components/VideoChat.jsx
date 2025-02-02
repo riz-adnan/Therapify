@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Environment } from "@react-three/drei";
 import { Model as Avatar } from "./Avatar";
 import { Canvas } from "@react-three/fiber";
+import { toast } from "react-toastify";
 import './verse.css';
 
 export const VideoChat = () => {
@@ -13,6 +14,7 @@ export const VideoChat = () => {
   const [loading, setLoading] = useState(false); // State for loader visibility
   const avatarRef = useRef();
 
+ 
   // Start recording and process the speech
   async function startRecording() {
     console.log('Recording started');
@@ -44,7 +46,7 @@ export const VideoChat = () => {
           if (isRecording) {
             console.log('Recognition ended');
             setListening(false);
-            setTalking(true); // Stop listening after recognition ends
+             // Stop listening after recognition ends
           }
         };
 
@@ -58,7 +60,7 @@ export const VideoChat = () => {
           silenceTimer = setTimeout(() => {
             isRecording = false;
             recognition.stop();
-          }, 10000); // Stop after 10 seconds of silence
+          }, 40000); // Stop after 10 seconds of silence
         }
 
         recognition.start();
@@ -108,7 +110,7 @@ export const VideoChat = () => {
        
         
 
-  
+        setTalking(true);
         window.speechSynthesis.speak(speech);
         
           speech.onend = () => {
@@ -141,6 +143,11 @@ export const VideoChat = () => {
   
 
   useEffect(() => {
+    toast.info('Since we are using a free server currently. Our Server might go to domant mode due to inactivity. If you are using this after a long time, please wait for a few seconds for the server to wake up.', {
+      position: 'top-center',
+      autoClose: 10000,
+    });
+    
     const storedChat = [
       { user: 'Therapist', text: 'Hi, I am your therapist. Let us begin the session.' },
     ];
@@ -168,15 +175,15 @@ export const VideoChat = () => {
 
   return (
     <div
-      className="scroll-container bg-cover bg-center h-[100vh] overflow-y-hidden"
+      className="scroll-container bg-cover bg-center h-[100vh] overflow-y-hidden "
       style={{
         backgroundImage: "url('/therapyroom.webp')",
       }}
     >
-      <div className={`canvas-wrapper ${sessionStarted ? "unblurred" : ""}`}>
+      <div className={`canvas-wrapper ${sessionStarted ? "unblurred" : "unblurred"}`}>
         <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-          <Avatar ref={avatarRef} position={[2.5, -6, -4]} scale={5} />
-          <Environment preset="sunset" />
+        <Avatar ref={avatarRef} position={[0, -6, -4]} scale={5} talking={talking} sessionStarted={sessionStarted} />
+        <Environment preset="sunset" />
           {loading && (
             <mesh position={[4, -6, -4]}>
               <sphereGeometry args={[0.5, 32, 32]} />
